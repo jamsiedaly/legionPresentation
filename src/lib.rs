@@ -1,5 +1,5 @@
 pub mod actions;
-pub mod screen;
-pub mod game_map;
 pub mod game;
+pub mod game_map;
 pub mod position;
+pub mod screen;

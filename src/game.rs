@@ -21,5 +21,5 @@ pub struct Game {
     pub population: i32,
     pub wood: i32,
     pub food: i32,
-    pub world: World
+    pub world: World,
 }

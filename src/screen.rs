@@ -1,7 +1,7 @@
+use crate::position::Position;
 use tcod::console::{blit, Offscreen, Root};
 use tcod::map::Map as FovMap;
 use tcod::{FontLayout, FontType};
-use crate::position::Position;
 
 pub struct Screen {
     pub root: Root,

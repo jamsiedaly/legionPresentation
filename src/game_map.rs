@@ -3,7 +3,7 @@ use noise::{NoiseFn, Perlin};
 use tcod::Color;
 
 pub struct GameMap {
-    tiles: Vec<Vec<Tile>>
+    tiles: Vec<Vec<Tile>>,
 }
 
 impl GameMap {
@@ -18,7 +18,6 @@ impl GameMap {
     pub fn is_buildable(&self, x: i32, y: i32) -> bool {
         return self.tiles[x as usize][y as usize].buildable;
     }
-
 
     pub fn make_tile_built_on(&mut self, x: i32, y: i32) {
         self.tiles[x as usize][y as usize].blocked = true;
@@ -43,7 +42,7 @@ impl GameMap {
 }
 
 pub fn make_map() -> GameMap {
-    let mut tiles = vec![vec![Tile::meadow(); (MAP_HEIGHT*3) as usize]; (MAP_WIDTH*3) as usize];
+    let mut tiles = vec![vec![Tile::meadow(); (MAP_HEIGHT * 3) as usize]; (MAP_WIDTH * 3) as usize];
     let perlin = Perlin::new();
     for y in 0..MAP_HEIGHT {
         for x in 0..MAP_WIDTH {
@@ -60,18 +59,20 @@ pub fn make_map() -> GameMap {
             for i in 0..3 {
                 for j in 0..3 {
                     if height >= 1.1 {
-                        tiles[(x + (MAP_WIDTH*i))  as usize][(y + (MAP_HEIGHT*j)) as usize] = Tile::mountain()
+                        tiles[(x + (MAP_WIDTH * i)) as usize][(y + (MAP_HEIGHT * j)) as usize] =
+                            Tile::mountain()
                     } else if height >= 0.50 {
-                        tiles[(x + (MAP_WIDTH*i)) as usize][(y + (MAP_HEIGHT*j)) as usize] = Tile::hill()
+                        tiles[(x + (MAP_WIDTH * i)) as usize][(y + (MAP_HEIGHT * j)) as usize] =
+                            Tile::hill()
                     } else if height < -0.175 {
-                        tiles[(x + (MAP_WIDTH*i)) as usize][(y + (MAP_HEIGHT*j)) as usize] = Tile::water()
+                        tiles[(x + (MAP_WIDTH * i)) as usize][(y + (MAP_HEIGHT * j)) as usize] =
+                            Tile::water()
                     } else if fertility >= 0.25 {
-                        tiles[(x + (MAP_WIDTH*i)) as usize][(y + (MAP_HEIGHT*j)) as usize] = Tile::forest()
+                        tiles[(x + (MAP_WIDTH * i)) as usize][(y + (MAP_HEIGHT * j)) as usize] =
+                            Tile::forest()
                     }
                 }
             }
-
-
         }
     }
     GameMap::new(tiles)
@@ -88,7 +89,7 @@ pub struct Tile {
 }
 
 impl Tile {
-    pub fn is_blocked(&self,) -> bool {
+    pub fn is_blocked(&self) -> bool {
         return self.blocked;
     }
 
@@ -197,4 +198,3 @@ pub const COLOR_PERSON: Color = Color {
 };
 
 pub const GAME_SEED: f64 = 1.5;
-
