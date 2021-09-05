@@ -6,7 +6,7 @@ use legion_presentation::component::position::Position;
 use legion_presentation::game::init_game;
 use legion_presentation::window::{init_screen, MAP_HEIGHT, MAP_WIDTH};
 use legion_presentation::resource::inventory::{Inventory, Player_Inventory};
-use legion_presentation::system::systems::sync_resources_system;
+use legion_presentation::system::systems::{sync_resources_system, harvest_system};
 
 use legion::*;
 use game_time::GameClock;
@@ -32,6 +32,7 @@ fn main() {
 
     let mut schedule = Schedule::builder()
         .add_system(sync_resources_system())
+        .add_system(harvest_system())
         .build();
 
     let inventory = Inventory::new(100, 100);
