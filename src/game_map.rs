@@ -1,4 +1,5 @@
-use crate::screen::{MAP_HEIGHT, MAP_WIDTH};
+use crate::window::{MAP_HEIGHT, MAP_WIDTH};
+
 use noise::{NoiseFn, Perlin};
 use tcod::Color;
 

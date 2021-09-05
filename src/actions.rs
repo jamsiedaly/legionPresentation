@@ -1,5 +1,13 @@
 use crate::actions::Action::*;
-use tcod::console::Root;
+use crate::component::building::House;
+use crate::component::drawable::Drawable;
+use crate::component::player::Player;
+use crate::component::position::Position;
+use crate::game::Game;
+use crate::game_map::COLOR_VILLAGE;
+use crate::window::{MAP_HEIGHT, MAP_WIDTH};
+
+use legion::IntoQuery;
 
 #[derive(PartialEq, Debug)]
 pub enum Action {
@@ -12,28 +20,71 @@ pub enum Action {
     Quit,
 }
 
-pub fn handle_keys(root: &Root) -> Vec<Action> {
-    use tcod::input::KeyCode::*;
-    use tcod::input::*;
-
-    let mut actions = vec![];
-    let key_option = root.check_for_keypress(KEY_PRESSED);
-    match key_option {
-        Some(key) => match key {
-            Key {
-                code: Enter,
-                alt: true,
-                ..
-            } => actions.push(FullScreen),
-            Key { code: Escape, .. } => actions.push(Quit),
-            Key { code: Up, .. } => actions.push(MoveUp),
-            Key { code: Down, .. } => actions.push(MoveDown),
-            Key { code: Left, .. } => actions.push(MoveLeft),
-            Key { code: Right, .. } => actions.push(MoveRight),
-            Key { code: Spacebar, .. } => actions.push(Build),
-            _ => {}
-        },
+pub fn process_player_action(action: Action, mut game: &mut Game) {
+    match action {
+        MoveUp => {
+            let mut query = <(&Player, &mut Position)>::query();
+            let position = query.iter_mut(&mut game.world).next().unwrap().1;
+            position.y -= 1;
+            if position.y < MAP_HEIGHT {
+                position.y = MAP_HEIGHT * 2 - 1
+            }
+            let (x, y) = (position.x, position.y);
+            if game.map.is_tile_blocked(x, y) {
+                position.y += 1;
+            }
+        }
+        MoveDown => {
+            let mut query = <(&Player, &mut Position)>::query();
+            let position = query.iter_mut(&mut game.world).next().unwrap().1;
+            position.y += 1;
+            if position.y >= MAP_HEIGHT * 2 {
+                position.y = 0 + MAP_HEIGHT
+            }
+            if game.map.is_tile_blocked(position.x, position.y) {
+                position.y -= 1;
+            }
+        }
+        MoveLeft => {
+            let mut query = <(&Player, &mut Position)>::query();
+            let position = query.iter_mut(&mut game.world).next().unwrap().1;
+            position.x -= 1;
+            if position.x < MAP_WIDTH {
+                position.x = MAP_WIDTH * 2 - 1
+            }
+            let (x, y) = (position.x, position.y);
+            if game.map.is_tile_blocked(x, y) {
+                position.x += 1;
+            }
+        }
+        MoveRight => {
+            let mut query = <(&Player, &mut Position)>::query();
+            let position = query.iter_mut(&mut game.world).next().unwrap().1;
+            position.x += 1;
+            if position.x >= MAP_WIDTH * 2 {
+                position.x = 0 + MAP_WIDTH
+            }
+            if game.map.is_tile_blocked(position.x, position.y) {
+                position.x -= 1;
+            }
+        }
+        Build => {
+            let mut query = <(&Player, &Position)>::query();
+            let player = query.iter(&game.world).next().unwrap();
+            let player_pos = Position {
+                x: player.1.x,
+                y: player.1.y,
+            };
+            if game.map.is_buildable(player_pos.x, player_pos.y) && game.wood >= 10 {
+                game.wood -= 10;
+                game.map.make_tile_built_on(player_pos.x, player_pos.y);
+                game.world.push((
+                    Position::new(player_pos.x, player_pos.y),
+                    Drawable::new('A', COLOR_VILLAGE),
+                    House::new(),
+                ));
+            }
+        }
         _ => {}
-    };
-    return actions;
+    }
 }

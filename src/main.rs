@@ -1,43 +1,60 @@
 use legion_presentation::actions::Action::*;
 use legion_presentation::actions::*;
-use legion_presentation::game::{init_game, Game};
-use legion_presentation::position::Position;
-use legion_presentation::screen::{init_screen, Screen};
-use tcod::console::blit;
-use tcod::{BackgroundFlag, Console};
+use legion_presentation::component::drawable::Drawable;
+use legion_presentation::component::player::init_player;
+use legion_presentation::component::position::Position;
+use legion_presentation::game::init_game;
+use legion_presentation::window::{init_screen, MAP_HEIGHT, MAP_WIDTH};
+
+use legion::{IntoQuery, Resources, Schedule};
 
 fn main() {
-    let mut screen = init_screen();
-    let mut game = init_game(screen.pixel_height, screen.pixel_width);
-    let position = Position::new(250, 250);
-    'game_loop: while screen.is_window_open() {
-        let actions = handle_keys(&screen.root);
+    let mut window = init_screen();
+    let mut game = init_game(window.pixel_height, window.pixel_width);
+
+    for y in 0..MAP_HEIGHT * 3 {
+        for x in 0..MAP_WIDTH * 3 {
+            window.field_of_view.set(
+                x,
+                y,
+                !game.map.is_tile_blocking_vision(x as usize, y as usize),
+                !game.map.is_tile_blocked(x, y),
+            );
+        }
+    }
+
+    let player = init_player(&mut game);
+    let previous_player_position = (-1, -1);
+
+    let mut schedule = Schedule::builder().build();
+
+    let mut resources = Resources::default();
+    'game_loop: loop {
+        window.clear();
+        let player_position = *game
+            .world
+            .entry(player)
+            .expect("Player got lost in the ECS")
+            .get_component::<Position>()
+            .expect("Player has no position component");
+        let fov_recompute = previous_player_position != (player_position.x, player_position.y);
+        let actions = window.handle_keys();
         for action in actions {
             if action == FullScreen {
-                let fullscreen = screen.root.is_fullscreen();
-                screen.root.set_fullscreen(!fullscreen);
+                let fullscreen = window.is_fullscreen();
+                window.set_fullscreen(!fullscreen);
             } else if action == Quit {
                 break 'game_loop;
+            } else {
+                process_player_action(action, &mut game)
             }
         }
-        blit_to_screen(&game, &mut screen, &position);
-        screen.render(&position);
-    }
-}
-
-pub fn blit_to_screen(game: &Game, screen: &mut Screen, position: &Position) {
-    let top = position.y - (game.camera_height / 2);
-    let bottom = position.y + (game.camera_height / 2);
-    let left = position.x - (game.camera_width / 2);
-    let right = position.x + (game.camera_width / 2);
-
-    for y in top..bottom {
-        for x in left..right {
-            let tile = game.map.get_tile(x as usize, y as usize);
-            let color = tile.color;
-            screen
-                .world
-                .set_char_background(x, y, color, BackgroundFlag::Set);
+        schedule.execute(&mut game.world, &mut resources);
+        let mut query = <(&Drawable, &Position)>::query();
+        window.draw_map(&mut game, &player_position, fov_recompute);
+        for (drawable, position) in query.iter(&game.world) {
+            window.draw_entity(position, drawable);
         }
+        window.render(&player_position);
     }
 }
