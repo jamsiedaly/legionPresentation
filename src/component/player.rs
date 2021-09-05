@@ -7,6 +7,7 @@ use crate::window::{MAP_HEIGHT, MAP_WIDTH};
 use legion::Entity;
 use rand::Rng;
 use tcod::colors::WHITE;
+use crate::resource::inventory::{Inventory, Player_Inventory};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Player {
@@ -30,6 +31,7 @@ pub fn init_player(game: &mut Game) -> Entity {
                 Drawable::new('@', WHITE),
                 Vision::new(true),
                 Player::new(true),
+                Player_Inventory::new(100, 100),
             ));
         }
     };

@@ -8,6 +8,7 @@ use crate::game_map::COLOR_VILLAGE;
 use crate::window::{MAP_HEIGHT, MAP_WIDTH};
 
 use legion::IntoQuery;
+use crate::resource::inventory::{Inventory, Player_Inventory};
 
 #[derive(PartialEq, Debug)]
 pub enum Action {
@@ -69,14 +70,14 @@ pub fn process_player_action(action: Action, mut game: &mut Game) {
             }
         }
         Build => {
-            let mut query = <(&Player, &Position)>::query();
-            let player = query.iter(&game.world).next().unwrap();
+            let mut query = <(&Player, &Position, &mut Player_Inventory)>::query();
+            let player = query.iter_mut(&mut game.world).next().unwrap();
             let player_pos = Position {
                 x: player.1.x,
                 y: player.1.y,
             };
-            if game.map.is_buildable(player_pos.x, player_pos.y) && game.wood >= 10 {
-                game.wood -= 10;
+            if game.map.is_buildable(player_pos.x, player_pos.y) && player.2.wood >= 10 {
+                player.2.wood_change -= 10;
                 game.map.make_tile_built_on(player_pos.x, player_pos.y);
                 game.world.push((
                     Position::new(player_pos.x, player_pos.y),
