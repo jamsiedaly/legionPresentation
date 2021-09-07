@@ -1,13 +1,12 @@
 use crate::component::drawable::Drawable;
 use crate::component::position::Position;
-use crate::component::vision::Vision;
 use crate::game::Game;
 use crate::game_map::{GameMap, Tile};
+use crate::resource::inventory::PlayerInventory;
 use crate::window::{MAP_HEIGHT, MAP_WIDTH};
 use legion::Entity;
 use rand::Rng;
 use tcod::colors::WHITE;
-use crate::resource::inventory::{Inventory, Player_Inventory};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Player {
@@ -29,9 +28,8 @@ pub fn init_player(game: &mut Game) -> Entity {
             break game.world.push((
                 Position::new(x + MAP_WIDTH, y + MAP_HEIGHT),
                 Drawable::new('@', WHITE),
-                Vision::new(true),
                 Player::new(true),
-                Player_Inventory::new(100, 100),
+                PlayerInventory::new(100, 100),
             ));
         }
     };

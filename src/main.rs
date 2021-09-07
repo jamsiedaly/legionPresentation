@@ -1,29 +1,30 @@
 use legion_presentation::actions::Action::*;
 use legion_presentation::actions::*;
 use legion_presentation::component::drawable::Drawable;
-use legion_presentation::component::player::{init_player, Player};
+use legion_presentation::component::player::init_player;
 use legion_presentation::component::position::Position;
 use legion_presentation::game::init_game;
+use legion_presentation::resource::inventory::Inventory;
+use legion_presentation::system::systems::{harvest_system, housing_system, sync_resources_system};
 use legion_presentation::window::{init_screen, MAP_HEIGHT, MAP_WIDTH};
-use legion_presentation::resource::inventory::{Inventory, Player_Inventory};
-use legion_presentation::system::systems::{sync_resources_system, harvest_system};
 
-use legion::*;
 use game_time::GameClock;
-use rand::rngs::ThreadRng;
+use legion::*;
 
 fn main() {
     let mut window = init_screen();
     let mut game = init_game(window.pixel_height, window.pixel_width);
 
-    for y in 0..MAP_HEIGHT * 3 {
-        for x in 0..MAP_WIDTH * 3 {
-            window.field_of_view.set(
-                x,
-                y,
-                !game.map.is_tile_blocking_vision(x as usize, y as usize),
-                !game.map.is_tile_blocked(x, y),
-            );
+    {
+        for y in 0..MAP_HEIGHT * 3 {
+            for x in 0..MAP_WIDTH * 3 {
+                window.field_of_view.set(
+                    x,
+                    y,
+                    !game.map.is_tile_blocking_vision(x as usize, y as usize),
+                    !game.map.is_tile_blocked(x, y),
+                );
+            }
         }
     }
 
@@ -33,15 +34,14 @@ fn main() {
     let mut schedule = Schedule::builder()
         .add_system(sync_resources_system())
         .add_system(harvest_system())
+        .add_system(housing_system())
         .build();
 
     let inventory = Inventory::new(100, 100);
     let game_clock = GameClock::default();
-    let mut rng = rand::thread_rng();
     let mut resources = Resources::default();
     resources.insert(inventory);
     resources.insert(game_clock);
-    resources.insert(rng);
 
     'game_loop: loop {
         window.clear();

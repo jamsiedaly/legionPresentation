@@ -20,16 +20,16 @@ impl Inventory {
     }
 }
 
-pub struct Player_Inventory {
+pub struct PlayerInventory {
     pub food: i32,
     pub wood: i32,
     pub food_change: i32,
     pub wood_change: i32,
 }
 
-impl Player_Inventory {
-    pub fn new(food: i32, wood: i32) -> Player_Inventory {
-        Player_Inventory {
+impl PlayerInventory {
+    pub fn new(food: i32, wood: i32) -> PlayerInventory {
+        PlayerInventory {
             food,
             wood,
             food_change: 0,
@@ -37,4 +37,3 @@ impl Player_Inventory {
         }
     }
 }
-
